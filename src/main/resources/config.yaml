@@ -1,0 +1,35 @@
+databaseName: sharding_db
+
+dataSources:
+  ds_0:
+    dataSourceClassName: io.quarkiverse.shardingsphere.jdbc.QuarkusDataSource
+    dsName: ds_0
+  ds_1:
+    dataSourceClassName: io.quarkiverse.shardingsphere.jdbc.QuarkusDataSource
+    dsName: ds_1
+
+rules:
+  - !SHARDING
+    tables:
+      t_user:
+        actualDataNodes: ds_${0..1}.t_user
+        keyGenerateStrategy:
+          column: user_id
+          keyGeneratorName: snowflake
+    defaultDatabaseStrategy:
+      standard:
+        shardingColumn: user_id
+        shardingAlgorithmName: database-inline
+
+    defaultTableStrategy:
+      none:
+
+    shardingAlgorithms:
+      database-inline:
+        type: INLINE
+        props:
+          algorithm-expression: ds_${user_id % 2}
+
+    keyGenerators:
+      snowflake:
+        type: SNOWFLAKE
